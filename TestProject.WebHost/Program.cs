@@ -31,13 +31,23 @@ using (var scope = app.Services.CreateAsyncScope())
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
         var uof = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
-        await uof.BeginTransactionAsync(IsolationLevel.RepeatableRead);
+        await Task.Delay(100);
+
+        await uof.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+
+        await Task.Delay(100);
 
         await uof.TestEntityRepo.AddSumAsync(1, 100);
 
         await Task.Delay(100);
 
+        var newAlice = await uof.TestEntityRepo.GetByIdAsync(1);
+
+        await Task.Delay(100);
+
         await uof.CommitTransactionAsync();
+
+        logger.LogDebug(newAlice?.ToString());
     });
 
     var task2 = Task.Run(async () =>
@@ -45,11 +55,15 @@ using (var scope = app.Services.CreateAsyncScope())
         var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
         var uof = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
-        await uof.BeginTransactionAsync(IsolationLevel.RepeatableRead);
+        await Task.Delay(250);
+
+        await uof.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+
+        await Task.Delay(0);
 
         await uof.TestEntityRepo.AddSumAsync(1, 200);
 
-        await Task.Delay(200);
+        await Task.Delay(0);
 
         await uof.CommitTransactionAsync();
 
