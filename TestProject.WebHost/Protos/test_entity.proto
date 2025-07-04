@@ -12,6 +12,10 @@ service TestEntityService {
 	rpc GetByIdTestEntityAsync (GetByIdTestEntityRequest) returns (GetByIdTestEntityResponse);
 
 	rpc GetAllTestEntitiesAsync (google.protobuf.Empty) returns (GetAllTestEntitiesResponse);
+
+	rpc AddSumAsync(AddSumRequest) returns (AddSumResponse);
+
+	rpc DeleteTestEntityAsync (DeleteTestEntityRequest) returns (google.protobuf.Empty);
 }
 
 
@@ -37,6 +41,12 @@ message GetByIdTestEntityResponse {
 	int32 id = 1;
 	int32 sum = 2;
 	string name = 3;
+	repeated GetByIdSubTestEntityDto subEntities = 4;
+
+	message  GetByIdSubTestEntityDto {
+		int32 id = 1;
+		string name = 2;
+	}
 }
 
 
@@ -53,7 +63,34 @@ message GetAllTestEntitiesResponse {
 
 		message GetAllSubTestEntitiesDto {
 			int32 id = 1;
-			string name = 3;
+			string name = 2;
 		}
+	}
+}
+
+
+
+
+message DeleteTestEntityRequest {
+	int32 id = 1;
+}
+
+
+
+
+message AddSumRequest {
+	int32 id = 1;
+	int32 sumToAdd = 2;
+}
+
+message AddSumResponse {
+	int32 id = 1;
+	int32 sum = 2;
+	string name = 3;
+	repeated AddSumSubTestEntityDto subEntities = 4;
+
+	message  AddSumSubTestEntityDto {
+		int32 id = 1;
+		string name = 2;
 	}
 }

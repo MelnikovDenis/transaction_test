@@ -7,6 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Protos\sub_test_entity.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Protos\sub_test_entity.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Protobuf Include="Protos\test_entity.proto" GrpcServices="Server" />
   </ItemGroup>
 

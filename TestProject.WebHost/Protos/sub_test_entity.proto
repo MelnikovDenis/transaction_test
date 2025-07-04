@@ -1,0 +1,55 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "TestProject.Grpc.Contracts";
+
+package TestProject;
+
+import "google/protobuf/empty.proto";
+
+service SubTestEntityService {
+	rpc CreateSubTestEntityAsync(CreateSubTestEntityRequest) returns (CreateSubTestEntityResponse);
+
+	rpc GetSubTestEntityByIdAsync() returns ();
+
+	rpc UpdateSubTestEntityNameAsync() returns ();
+
+	rpc DeleteSubTestEntityAsync() returns ();
+}
+
+
+
+message CreateSubTestEntityRequest {
+	string name = 1;
+	int32 testEntityId = 2;	
+}
+
+message CreateSubTestEntityResponse {
+	int32 id = 1;
+	string name = 2;
+	int32 testEntityId = 3;
+}
+
+
+
+message GetSubTestEntityByIdRequest {
+	int32 id = 1;
+}
+
+message GetSubTestEntityByIdResponse {
+	int32 id = 1;
+	string name = 2;
+	int32 testEntityId = 3;
+}
+
+
+
+message UpdateSubTestEntityNameRequest {
+	int32 id = 1;
+	string newName = 2;
+}
+
+message UpdateSubTestEntityResponse {
+	int32 id = 1;
+	string name = 2;
+	int32 testEntityId = 3;
+}

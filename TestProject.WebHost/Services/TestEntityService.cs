@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using System.Data;
 using TestProject.App.Infra.Contracts;
 using TestProject.Core.Entities;
 using TestProject.Grpc.Contracts;
@@ -48,5 +49,41 @@ public class TestEntityServiceImpl(IUnitOfWork uow, IMapper mapper) : TestEntity
         response.TestEntities.AddRange(testEntities.Select(_mapper.Map<GetAllTestEntitiesDto>));
 
         return  response;
+    }
+
+    public override async Task<AddSumResponse> AddSumAsync(AddSumRequest request, ServerCallContext context)
+    {
+        var id = request.Id;
+        var sumToAdd = request.SumToAdd;
+
+        await _uow.BeginTransactionAsync(IsolationLevel.ReadCommitted, context.CancellationToken);
+
+        try
+        {
+            var rowsAffected = await _uow.TestEntityRepo.AddSumAsync(id, sumToAdd, context.CancellationToken);
+
+            var testEntity = await _uow.TestEntityRepo.GetByIdAsync(id, context.CancellationToken);
+
+            await _uow.CommitTransactionAsync(context.CancellationToken);
+
+            return _mapper.Map<AddSumResponse>(testEntity);
+        }
+        catch (Exception ex)
+        {
+            await _uow.RollbackTransactionAsync(CancellationToken.None);
+
+            throw new RpcException(new Status(StatusCode.Internal, "Что-то пошло не так при выполнении транзакции", ex));
+        }
+    }
+
+    public override async Task<Empty> DeleteTestEntityAsync(DeleteTestEntityRequest request, ServerCallContext context)
+    {
+        var id = request.Id;
+
+        var rowsAffected = await _uow.TestEntityRepo.DeleteAsync(id, context.CancellationToken);
+
+        var response = new Empty();
+
+        return response;
     }
 }
