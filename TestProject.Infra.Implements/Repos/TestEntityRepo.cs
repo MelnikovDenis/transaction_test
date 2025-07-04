@@ -13,74 +13,212 @@ internal class TestEntityRepo(DbConnection connection) : ITestEntityRepo
 
     private readonly DbConnection _connection = connection;
 
-    public async Task<int> CreateAsync(
-        TestEntity entity,
-        CancellationToken cancellationToken = default)
+    #region async implements
+
+    public async Task<int> CreateAsync(TestEntity entity, CancellationToken cancellationToken = default)
     {
         const string sqlQuery = $@"
-                INSERT INTO test_entities (id, sum, name)
-                VALUES (@{nameof(TestEntity.Id)}, @{nameof(TestEntity.Sum)}, @{nameof(TestEntity.Name)})";
+            INSERT INTO test_entities (sum, name)
+            VALUES (@{nameof(TestEntity.Sum)}, @{nameof(TestEntity.Name)})
+            RETURNING id;";
 
-        var commandDefinition = new CommandDefinition(sqlQuery, 
-            new { entity.Id, entity.Sum, entity.Name}, 
-            _transaction, 
+        var command = new CommandDefinition(
+            sqlQuery,
+            new { entity.Sum, entity.Name },
+            _transaction,
             cancellationToken: cancellationToken);
 
-        return await _connection.ExecuteAsync(commandDefinition);
+        var generatedId = await _connection.ExecuteScalarAsync<int>(command);
+        return generatedId;
     }
 
-    public async Task<TestEntity?> GetByIdAsync(
-        int id,
-        CancellationToken cancellationToken = default)
+    public async Task<TestEntity?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        const string sql = $@"
-            SELECT
-                id AS {nameof(TestEntity.Id)}, 
-                sum AS {nameof(TestEntity.Sum)}, 
-                name AS {nameof(TestEntity.Name)}
-            FROM test_entities 
-            WHERE id = @{nameof(id)}";
+        var entity = await _connection.QueryFirstOrDefaultAsync<TestEntity>(
+            new CommandDefinition(
+                @$"SELECT id AS {nameof(TestEntity.Id)}, 
+                          sum AS {nameof(TestEntity.Sum)}, 
+                          name AS {nameof(TestEntity.Name)} 
+                   FROM test_entities 
+                   WHERE id = @id",
+                new { id },
+                _transaction,
+                cancellationToken: cancellationToken));
 
-        var commandDefinition = new CommandDefinition(sql, new { id }, _transaction, cancellationToken: cancellationToken);
+        if (entity is null)
+        {
+            return null;
+        }            
 
-        return await _connection.QueryFirstOrDefaultAsync<TestEntity>(commandDefinition);
+        var subEntities = (await _connection.QueryAsync<SubTestEntity>(
+            new CommandDefinition(
+                @$"SELECT id AS {nameof(SubTestEntity.Id)}, 
+                          name AS {nameof(SubTestEntity.Name)}, 
+                          test_entity_id AS {nameof(SubTestEntity.TestEntityId)} 
+                   FROM test_sub_entities 
+                   WHERE test_entity_id = @id",
+                new { id },
+                _transaction,
+                cancellationToken: cancellationToken))).ToList();
+
+        entity.SubEntities = subEntities;
+
+        return entity;
     }
 
-    public async Task<int> AddSumAsync(
-        int id,
-        int sumToAdd,
-        CancellationToken cancellationToken = default)
+    public async Task<int> AddSumAsync(int id, int sumToAdd, CancellationToken cancellationToken = default)
     {
         const string sqlQuery = $@"
             UPDATE test_entities 
-            SET sum = sum + @{nameof(sumToAdd)}
+            SET sum = sum + @{nameof(sumToAdd)} 
             WHERE id = @{nameof(id)}";
 
-        var commandDefinition = new CommandDefinition(
-            sqlQuery,
-            new { id, sumToAdd },
-            _transaction,
-            cancellationToken: cancellationToken);
-
-        return await _connection.ExecuteAsync(commandDefinition);
+        return await _connection.ExecuteAsync(
+            new CommandDefinition(sqlQuery, new { id, sumToAdd }, _transaction, cancellationToken: cancellationToken));
     }
 
-    public async Task<int> DeleteAsync(
-        int id,
-        CancellationToken cancellationToken = default)
+    public async Task<int> DeleteAsync(int id, CancellationToken cancellationToken = default)
+    {
+        const string sqlQuery = $@"DELETE FROM test_entities WHERE id = @{nameof(id)}";
+
+        return await _connection.ExecuteAsync(
+            new CommandDefinition(sqlQuery, new { id }, _transaction, cancellationToken: cancellationToken));
+    }
+
+    public async Task<IEnumerable<TestEntity>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        const string entitySql = $@"
+            SELECT id AS {nameof(TestEntity.Id)},
+                   sum AS {nameof(TestEntity.Sum)},
+                   name AS {nameof(TestEntity.Name)}
+            FROM test_entities";
+
+        const string subEntitySql = $@"
+            SELECT id AS {nameof(SubTestEntity.Id)},
+                   name AS {nameof(SubTestEntity.Name)},
+                   test_entity_id AS {nameof(SubTestEntity.TestEntityId)}
+            FROM test_sub_entities";
+
+        var command1 = new CommandDefinition(entitySql, transaction: _transaction, cancellationToken: cancellationToken);
+        var command2 = new CommandDefinition(subEntitySql, transaction: _transaction, cancellationToken: cancellationToken);
+
+        var entities = (await _connection.QueryAsync<TestEntity>(command1)).ToList();
+        var subEntities = (await _connection.QueryAsync<SubTestEntity>(command2)).ToList();
+
+        var subEntitiesLookup = subEntities.GroupBy(se => se.TestEntityId)
+                                           .ToDictionary(g => g.Key, g => g.ToList());
+
+        foreach (var entity in entities)
+        {
+            if (subEntitiesLookup.TryGetValue(entity.Id, out var subs))
+            {
+                entity.SubEntities = subs;
+            }
+        }
+
+        return entities;
+    }
+
+    #endregion
+
+
+
+    #region sync implements
+
+    public int Create(TestEntity entity)
     {
         const string sqlQuery = $@"
-            DELETE FROM test_entities 
+            INSERT INTO test_entities (sum, name)
+            VALUES (@{nameof(TestEntity.Sum)}, @{nameof(TestEntity.Name)})
+            RETURNING id AS {nameof(TestEntity.Id)};";
+
+        var generatedId = _connection.ExecuteScalar<int>(
+            sqlQuery,
+            new { entity.Sum, entity.Name },
+            _transaction);
+
+        return generatedId;
+    }
+
+    public TestEntity? GetById(int id)
+    {
+        const string entitySql = $@"
+            SELECT id AS {nameof(TestEntity.Id)}, 
+                   sum AS {nameof(TestEntity.Sum)}, 
+                   name AS {nameof(TestEntity.Name)} 
+            FROM test_entities 
+            WHERE id = @id";
+
+        var entity = _connection.QueryFirstOrDefault<TestEntity>(entitySql, new { id }, _transaction);
+
+        if (entity is null)
+        {
+            return null;
+        }           
+
+        const string subEntitySql = $@"
+            SELECT id AS {nameof(SubTestEntity.Id)}, 
+                   name AS {nameof(SubTestEntity.Name)}, 
+                   test_entity_id AS {nameof(SubTestEntity.TestEntityId)} 
+            FROM test_sub_entities 
+            WHERE test_entity_id = @id";
+
+        var subEntities = _connection.Query<SubTestEntity>(subEntitySql, new { id }, _transaction).ToList();
+
+        entity.SubEntities = subEntities;
+
+        return entity;
+    }
+
+    public int AddSum(int id, int sumToAdd)
+    {
+        const string sqlQuery = $@"
+            UPDATE test_entities 
+            SET sum = sum + @{nameof(sumToAdd)} 
             WHERE id = @{nameof(id)}";
 
-        var commandDefinition = new CommandDefinition(
-            sqlQuery,
-            new { id },
-            _transaction,
-            cancellationToken: cancellationToken);
-
-        return await _connection.ExecuteAsync(commandDefinition);
+        return _connection.Execute(sqlQuery, new { id, sumToAdd }, _transaction);
     }
+
+    public int Delete(int id)
+    {
+        const string sqlQuery = $@"DELETE FROM test_entities WHERE id = @{nameof(id)}";
+
+        return _connection.Execute(sqlQuery, new { id }, _transaction);
+    }
+
+    public IEnumerable<TestEntity> GetAll()
+    {
+        const string entitySql = $@"
+            SELECT id AS {nameof(TestEntity.Id)},
+                   sum AS {nameof(TestEntity.Sum)},
+                   name AS {nameof(TestEntity.Name)}
+            FROM test_entities";
+
+        const string subEntitySql = $@"
+            SELECT id AS {nameof(SubTestEntity.Id)},
+                   name AS {nameof(SubTestEntity.Name)},
+                   test_entity_id AS {nameof(SubTestEntity.TestEntityId)}
+            FROM test_sub_entities";
+
+        var entities = _connection.Query<TestEntity>(entitySql, transaction: _transaction).ToList();
+        var subEntities = _connection.Query<SubTestEntity>(subEntitySql, transaction: _transaction).ToList();
+
+        var subEntitiesLookup = subEntities.GroupBy(se => se.TestEntityId)
+                                           .ToDictionary(g => g.Key, g => g.ToList());
+
+        foreach (var entity in entities)
+        {
+            if (subEntitiesLookup.TryGetValue(entity.Id, out var subs))
+            {
+                entity.SubEntities = subs;
+            }
+        }
+
+        return entities;
+    }
+
+    #endregion
 
     internal void SetTransaction(DbTransaction transaction)
     {

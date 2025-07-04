@@ -15,6 +15,8 @@ public static class EnsureDbReadyExtension
             dbCreator.EnsureDbCreated();
             runner.MigrateUp();
             dbCreator.EnsureDbEmpty();
+
+            dbCreator.SeedDb();
         }
 
         return serviceProvider;

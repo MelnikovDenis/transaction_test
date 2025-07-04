@@ -2,45 +2,38 @@
 
 namespace TestProject.App.Infra.Contracts.Repos;
 
-public interface ITestEntityRepo
+public interface ISubTestEntityRepo
 {
     #region async contracts
 
     public Task<int> CreateAsync(
-        TestEntity entity,
+        SubTestEntity entity,
         CancellationToken cancellationToken = default);
 
-    public Task<TestEntity?> GetByIdAsync(
+    public Task<SubTestEntity?> GetByIdAsync(
         int id,
         CancellationToken cancellationToken = default);
 
-    public Task<int> AddSumAsync(
+    public Task<int> UpdateNameAsync(
         int id,
-        int sumToAdd,
+        string newName,
         CancellationToken cancellationToken = default);
 
     public Task<int> DeleteAsync(
         int id,
         CancellationToken cancellationToken = default);
 
-    public Task<IEnumerable<TestEntity>> GetAllAsync(
-        CancellationToken cancellationToken = default);
-
     #endregion
-
-
 
     #region sync contracts
 
-    public int Create(TestEntity entity);
+    public int Create(SubTestEntity entity);
 
-    public TestEntity? GetById(int id);
+    public SubTestEntity? GetById(int id);
 
-    public int AddSum(int id, int sumToAdd);
+    public int UpdateName(int id, string newName);
 
     public int Delete(int id);
-
-    public IEnumerable<TestEntity> GetAll();
 
     #endregion
 }

@@ -13,16 +13,16 @@ namespace TestProject.Infra.Implements;
 internal class UnitOfWork : IDisposable, IUnitOfWork
 {
     private readonly ILogger<UnitOfWork> _logger;
-
-    private readonly PostgreSqlOptions _options;    
+    private readonly PostgreSqlOptions _options;
 
     private DbConnection? _connection;
-
     private DbTransaction? _transaction;
 
-    private TestEntityRepo _testEntityRepo;
+    private readonly TestEntityRepo _testEntityRepo;
+    private readonly SubTestEntityRepo _testSubEntityRepo;
 
     public ITestEntityRepo TestEntityRepo => _testEntityRepo;
+    public ISubTestEntityRepo TestSubEntityRepo => _testSubEntityRepo;
 
     public UnitOfWork(IOptions<PostgreSqlOptions> options, ILogger<UnitOfWork> logger)
     {
@@ -30,56 +30,116 @@ internal class UnitOfWork : IDisposable, IUnitOfWork
         _options = options.Value;
         _connection = new NpgsqlConnection(_options.WorkConnectionString);
         _testEntityRepo = new TestEntityRepo(_connection);
+        _testSubEntityRepo = new SubTestEntityRepo(_connection);
         _connection.Open();
     }
 
+    #region async transactions
+
     public async Task BeginTransactionAsync(IsolationLevel isolation, CancellationToken cancellationToken = default)
     {
-        if(_connection == null)
-        {
-            throw new InvalidOperationException("Невозможно начать транзакцию, соединение не установлено");
-        }
+        EnsureConnection();
 
-        _logger.LogDebug("Старт транзакции");
+        _logger.LogDebug("Старт транзакции (async)");
 
-       _transaction =  await _connection.BeginTransactionAsync(isolation, cancellationToken);
+        _transaction = await _connection!.BeginTransactionAsync(isolation, cancellationToken);
 
         _testEntityRepo.SetTransaction(_transaction);
+        _testSubEntityRepo.SetTransaction(_transaction);
     }
 
     public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
     {
-        if(_transaction == null)
-        {
-            throw new InvalidOperationException("Невозможно закоммитить транзакцию, т.к. транзакция не начата");
-        }
+        EnsureTransactionStarted();
 
-        _logger.LogDebug("Коммит транзакции");
+        _logger.LogDebug("Коммит транзакции (async)");
 
-        await _transaction.CommitAsync(cancellationToken);
+        await _transaction!.CommitAsync(cancellationToken);
 
-        _testEntityRepo.UnsetTransaction();
-        await _transaction.DisposeAsync();
-        _transaction = null;        
+        ClearTransaction();
     }
 
     public async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
     {
+        EnsureTransactionStarted();
+
+        _logger.LogDebug("Откат транзакции (async)");
+
+        await _transaction!.RollbackAsync(cancellationToken);
+
+        ClearTransaction();
+    }
+
+    #endregion
+
+    #region sync transactions
+
+    public void BeginTransaction(IsolationLevel isolation)
+    {
+        EnsureConnection();
+
+        _logger.LogDebug("Старт транзакции (sync)");
+
+        _transaction = _connection!.BeginTransaction(isolation);
+
+        _testEntityRepo.SetTransaction(_transaction);
+        _testSubEntityRepo.SetTransaction(_transaction);
+    }
+
+    public void CommitTransaction()
+    {
+        EnsureTransactionStarted();
+
+        _logger.LogDebug("Коммит транзакции (sync)");
+
+        _transaction!.Commit();
+
+        ClearTransaction();
+    }
+
+    public void RollbackTransaction()
+    {
+        EnsureTransactionStarted();
+
+        _logger.LogDebug("Откат транзакции (sync)");
+
+        _transaction!.Rollback();
+
+        ClearTransaction();
+    }
+
+    #endregion
+
+    #region helpers
+
+    private void EnsureConnection()
+    {
+        if (_connection == null)
+        {
+            throw new InvalidOperationException("Невозможно начать транзакцию, соединение не установлено");
+        }
+    }
+
+    private void EnsureTransactionStarted()
+    {
         if (_transaction == null)
         {
-            throw new InvalidOperationException("Невозможно отменить транзакцию, т.к. транзакция не начата");
+            throw new InvalidOperationException("Транзакция не начата");
         }
+    }
 
-        _logger.LogDebug("Отмена транзакции");
-
-        await _transaction.RollbackAsync(cancellationToken);
-
+    private void ClearTransaction()
+    {
         _testEntityRepo.UnsetTransaction();
-        await _transaction.DisposeAsync();
+        _testSubEntityRepo.UnsetTransaction();
+
+        _transaction?.Dispose();
         _transaction = null;
     }
 
-    #region Dispose
+    #endregion
+
+    #region dispose
 
     ~UnitOfWork()
     {
@@ -103,9 +163,8 @@ internal class UnitOfWork : IDisposable, IUnitOfWork
             if (disposing)
             {
                 _transaction?.Dispose();
-                _transaction = null;
-
                 _connection?.Dispose();
+                _transaction = null;
                 _connection = null;
             }
         }

@@ -14,7 +14,7 @@ public static class SetUpMigrationsExtension
         services.AddFluentMigratorCore()
             .ConfigureRunner(x => x.AddPostgres()
                 .WithGlobalConnectionString(postgreSqlOptions.WorkConnectionString)
-                .ScanIn(typeof(CreateTestEntityTable).Assembly).For.Migrations());
+                .ScanIn(typeof(CreateTestSchema).Assembly).For.Migrations());
 
         return services;
     }
