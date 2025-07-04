@@ -1,0 +1,59 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "TestProject.Grpc.Contracts";
+
+package TestProject;
+
+import "google/protobuf/empty.proto";
+
+service TestEntityService {
+	rpc CreateTestEntityAsync (CreateTestEntityRequest) returns (CreateTestEntityResponse);
+
+	rpc GetByIdTestEntityAsync (GetByIdTestEntityRequest) returns (GetByIdTestEntityResponse);
+
+	rpc GetAllTestEntitiesAsync (google.protobuf.Empty) returns (GetAllTestEntitiesResponse);
+}
+
+
+
+message CreateTestEntityRequest {
+	int32 sum = 1;
+	string name = 2;
+}
+
+message CreateTestEntityResponse {
+	int32 id = 1;
+	int32 sum = 2;
+	string name = 3;
+}
+
+
+
+message GetByIdTestEntityRequest {
+	int32 id = 1;
+}
+
+message GetByIdTestEntityResponse {
+	int32 id = 1;
+	int32 sum = 2;
+	string name = 3;
+}
+
+
+
+message GetAllTestEntitiesResponse {
+
+	repeated GetAllTestEntitiesDto testEntities = 1;
+
+	message GetAllTestEntitiesDto {
+		int32 id = 1;
+		int32 sum = 2;
+		string name = 3;
+		repeated GetAllSubTestEntitiesDto subEntities = 4;
+
+		message GetAllSubTestEntitiesDto {
+			int32 id = 1;
+			string name = 3;
+		}
+	}
+}
