@@ -15,7 +15,11 @@ public class SubTestEntityServiceImpl(IUnitOfWork uow, IMapper mapper) : SubTest
 
     public override async Task<CreateSubTestEntityResponse> CreateSubTestEntityAsync(CreateSubTestEntityRequest request, ServerCallContext context)
     {
-        throw new NotImplementedException();
+        var subTestEntity = _mapper.Map<SubTestEntity>(request);
+
+        subTestEntity.Id = await _uow.TestSubEntityRepo.CreateAsync(subTestEntity, context.CancellationToken);
+
+        return _mapper.Map<CreateSubTestEntityResponse>(subTestEntity);
     }
 
     public override async Task<GetSubTestEntityByIdResponse> GetSubTestEntityByIdAsync(GetSubTestEntityByIdRequest request, ServerCallContext context)

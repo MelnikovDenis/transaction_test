@@ -23,6 +23,9 @@ public class AppProfile : Profile
         CreateMap<TestEntity, GetAllTestEntitiesDto>();
 
         CreateMap<SubTestEntity, AddSumSubTestEntityDto>();
-        CreateMap<TestEntity, AddSumResponse>();     
+        CreateMap<TestEntity, AddSumResponse>();
+
+        CreateMap<CreateSubTestEntityRequest, SubTestEntity>();
+        CreateMap<SubTestEntity, CreateSubTestEntityResponse>();
     }
 }
