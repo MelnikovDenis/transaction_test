@@ -89,7 +89,7 @@ internal class DatabaseManager(IOptions<PostgreSqlOptions> postgreSqlOptions,
                 {
                     var subTestEntity = SeedGenerator.GetRandomSubTestEntity(testEntity.Id);
 
-                    subTestEntity.Id = uow.TestSubEntityRepo.Create(subTestEntity);
+                    subTestEntity.Id = uow.SubTestEntityRepo.Create(subTestEntity);
                 }
             }
 

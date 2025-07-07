@@ -19,10 +19,10 @@ internal class UnitOfWork : IDisposable, IUnitOfWork
     private DbTransaction? _transaction;
 
     private readonly TestEntityRepo _testEntityRepo;
-    private readonly SubTestEntityRepo _testSubEntityRepo;
+    private readonly SubTestEntityRepo _subTestEntityRepo;
 
     public ITestEntityRepo TestEntityRepo => _testEntityRepo;
-    public ISubTestEntityRepo TestSubEntityRepo => _testSubEntityRepo;
+    public ISubTestEntityRepo SubTestEntityRepo => _subTestEntityRepo;
 
     public UnitOfWork(IOptions<PostgreSqlOptions> options, ILogger<UnitOfWork> logger)
     {
@@ -30,7 +30,7 @@ internal class UnitOfWork : IDisposable, IUnitOfWork
         _options = options.Value;
         _connection = new NpgsqlConnection(_options.WorkConnectionString);
         _testEntityRepo = new TestEntityRepo(_connection);
-        _testSubEntityRepo = new SubTestEntityRepo(_connection);
+        _subTestEntityRepo = new SubTestEntityRepo(_connection);
         _connection.Open();
     }
 
@@ -45,7 +45,7 @@ internal class UnitOfWork : IDisposable, IUnitOfWork
         _transaction = await _connection!.BeginTransactionAsync(isolation, cancellationToken);
 
         _testEntityRepo.SetTransaction(_transaction);
-        _testSubEntityRepo.SetTransaction(_transaction);
+        _subTestEntityRepo.SetTransaction(_transaction);
     }
 
     public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
@@ -83,7 +83,7 @@ internal class UnitOfWork : IDisposable, IUnitOfWork
         _transaction = _connection!.BeginTransaction(isolation);
 
         _testEntityRepo.SetTransaction(_transaction);
-        _testSubEntityRepo.SetTransaction(_transaction);
+        _subTestEntityRepo.SetTransaction(_transaction);
     }
 
     public void CommitTransaction()
@@ -131,7 +131,7 @@ internal class UnitOfWork : IDisposable, IUnitOfWork
     private void ClearTransaction()
     {
         _testEntityRepo.UnsetTransaction();
-        _testSubEntityRepo.UnsetTransaction();
+        _subTestEntityRepo.UnsetTransaction();
 
         _transaction?.Dispose();
         _transaction = null;

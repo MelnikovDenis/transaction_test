@@ -6,7 +6,7 @@ namespace TestProject.App.Infra.Contracts;
 public interface IUnitOfWork
 {
     ITestEntityRepo TestEntityRepo { get; }
-    ISubTestEntityRepo TestSubEntityRepo { get; }
+    ISubTestEntityRepo SubTestEntityRepo { get; }
 
 
 

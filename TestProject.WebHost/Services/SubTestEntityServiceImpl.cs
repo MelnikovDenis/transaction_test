@@ -18,7 +18,7 @@ public class SubTestEntityServiceImpl(IUnitOfWork uow, IMapper mapper) : SubTest
     {
         var subTestEntity = _mapper.Map<SubTestEntity>(request);
 
-        subTestEntity.Id = await _uow.TestSubEntityRepo.CreateAsync(subTestEntity, context.CancellationToken);
+        subTestEntity.Id = await _uow.SubTestEntityRepo.CreateAsync(subTestEntity, context.CancellationToken);
 
         return _mapper.Map<CreateSubTestEntityResponse>(subTestEntity);
     }
@@ -27,7 +27,7 @@ public class SubTestEntityServiceImpl(IUnitOfWork uow, IMapper mapper) : SubTest
     {
         var id = request.Id;
 
-        var subTestEntity = await _uow.TestSubEntityRepo.GetByIdAsync(id, context.CancellationToken);
+        var subTestEntity = await _uow.SubTestEntityRepo.GetByIdAsync(id, context.CancellationToken);
 
         if (subTestEntity == null)
         {
@@ -46,7 +46,7 @@ public class SubTestEntityServiceImpl(IUnitOfWork uow, IMapper mapper) : SubTest
 
         try
         {
-            var rowsAffected = await _uow.TestSubEntityRepo.UpdateNameAsync(id, newName, context.CancellationToken);
+            var rowsAffected = await _uow.SubTestEntityRepo.UpdateNameAsync(id, newName, context.CancellationToken);
 
             if (rowsAffected == 0)
             {
@@ -54,7 +54,7 @@ public class SubTestEntityServiceImpl(IUnitOfWork uow, IMapper mapper) : SubTest
                     $"Не удалось обновить поле {nameof(SubTestEntity.Name)} у сущности {typeof(SubTestEntity).Name} с id: {id}"));
             }
 
-            var subTestEntity = await _uow.TestSubEntityRepo.GetByIdAsync(id, context.CancellationToken);
+            var subTestEntity = await _uow.SubTestEntityRepo.GetByIdAsync(id, context.CancellationToken);
 
             if (subTestEntity == null)
             {
@@ -75,6 +75,12 @@ public class SubTestEntityServiceImpl(IUnitOfWork uow, IMapper mapper) : SubTest
 
     public override async Task<Empty> DeleteSubTestEntityAsync(DeleteSubTestEntityRequest request, ServerCallContext context)
     {
-        throw new NotImplementedException();
+        var id = request.Id;
+
+        var rowsAffected = await _uow.SubTestEntityRepo.DeleteAsync(id, context.CancellationToken);
+
+        var response = new Empty();
+
+        return response;
     }
 }
