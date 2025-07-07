@@ -20,6 +20,7 @@ var app = builder.Build();
 app.Services.EnsureDbReady(app.Configuration);
 
 app.MapGrpcService<TestEntityServiceImpl>();
+app.MapGrpcService<SubTestEntityServiceImpl>();
 app.MapGrpcReflectionService();
 
 app.Run();

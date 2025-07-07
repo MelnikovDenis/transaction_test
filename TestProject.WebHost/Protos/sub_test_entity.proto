@@ -9,11 +9,11 @@ import "google/protobuf/empty.proto";
 service SubTestEntityService {
 	rpc CreateSubTestEntityAsync(CreateSubTestEntityRequest) returns (CreateSubTestEntityResponse);
 
-	rpc GetSubTestEntityByIdAsync() returns ();
+	rpc GetSubTestEntityByIdAsync(GetSubTestEntityByIdRequest) returns (GetSubTestEntityByIdResponse);
 
-	rpc UpdateSubTestEntityNameAsync() returns ();
+	rpc UpdateSubTestEntityNameAsync(UpdateSubTestEntityNameRequest) returns (UpdateSubTestEntityNameResponse);
 
-	rpc DeleteSubTestEntityAsync() returns ();
+	rpc DeleteSubTestEntityAsync(DeleteSubTestEntityRequest) returns (google.protobuf.Empty);
 }
 
 
@@ -48,8 +48,12 @@ message UpdateSubTestEntityNameRequest {
 	string newName = 2;
 }
 
-message UpdateSubTestEntityResponse {
+message UpdateSubTestEntityNameResponse {
 	int32 id = 1;
 	string name = 2;
 	int32 testEntityId = 3;
+}
+
+message DeleteSubTestEntityRequest {
+	int32 id = 1;
 }
