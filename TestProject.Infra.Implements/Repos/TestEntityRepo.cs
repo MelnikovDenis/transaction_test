@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using Npgsql;
+using System.Data;
 using System.Data.Common;
 using System.Runtime.CompilerServices;
 using TestProject.App.Infra.Contracts;
@@ -131,7 +132,7 @@ internal class TestEntityRepo(DbConnection connection) : ITestEntityRepo
             transaction: _transaction,
             cancellationToken: cancellationToken);
 
-        await using var reader = await _connection.ExecuteReaderAsync(command);
+        await using var reader = await _connection.ExecuteReaderAsync(command, CommandBehavior.SequentialAccess);
 
         var idOrdinal = reader.GetOrdinal(nameof(TestEntity.Id));
         var sumOrdinal = reader.GetOrdinal(nameof(TestEntity.Sum));
