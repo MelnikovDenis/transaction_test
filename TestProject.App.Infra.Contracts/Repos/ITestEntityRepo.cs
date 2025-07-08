@@ -1,4 +1,5 @@
-﻿using TestProject.Core.Entities;
+﻿using System.Runtime.CompilerServices;
+using TestProject.Core.Entities;
 
 namespace TestProject.App.Infra.Contracts.Repos;
 
@@ -24,6 +25,9 @@ public interface ITestEntityRepo
         CancellationToken cancellationToken = default);
 
     public Task<IEnumerable<TestEntity>> GetAllAsync(
+        CancellationToken cancellationToken = default);
+
+    public IAsyncEnumerable<TestEntity> GetAllAsStreamAsync(
         CancellationToken cancellationToken = default);
 
     #endregion

@@ -16,6 +16,8 @@ service TestEntityService {
 	rpc AddSumAsync(AddSumRequest) returns (AddSumResponse);
 
 	rpc DeleteTestEntityAsync (DeleteTestEntityRequest) returns (google.protobuf.Empty);
+
+	rpc GetAllTestEntitiesAsStreamAsync (google.protobuf.Empty) returns (stream GetAllTestEntitiesAsStreamResponse);
 }
 
 
@@ -93,4 +95,10 @@ message AddSumResponse {
 		int32 id = 1;
 		string name = 2;
 	}
+}
+
+message GetAllTestEntitiesAsStreamResponse {
+	int32 id = 1;
+	int32 sum = 2;
+	string name = 3;
 }

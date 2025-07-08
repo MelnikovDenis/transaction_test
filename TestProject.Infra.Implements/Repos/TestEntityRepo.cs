@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using Npgsql;
 using System.Data.Common;
+using System.Runtime.CompilerServices;
 using TestProject.App.Infra.Contracts;
 using TestProject.App.Infra.Contracts.Repos;
 using TestProject.Core.Entities;
@@ -117,6 +118,34 @@ internal class TestEntityRepo(DbConnection connection) : ITestEntityRepo
         }
 
         return entities;
+    }
+
+    public async IAsyncEnumerable<TestEntity> GetAllAsStreamAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        var command = new CommandDefinition(
+            @$"SELECT 
+                id AS {nameof(TestEntity.Id)}, 
+                sum AS {nameof(TestEntity.Sum)}, 
+                name AS {nameof(TestEntity.Name)} 
+            FROM test_entities",
+            transaction: _transaction,
+            cancellationToken: cancellationToken);
+
+        await using var reader = await _connection.ExecuteReaderAsync(command);
+
+        var idOrdinal = reader.GetOrdinal(nameof(TestEntity.Id));
+        var sumOrdinal = reader.GetOrdinal(nameof(TestEntity.Sum));
+        var nameOrdinal = reader.GetOrdinal(nameof(TestEntity.Name));
+
+        while (await reader.ReadAsync(cancellationToken))
+        {
+            yield return new TestEntity
+            {
+                Id = reader.GetInt32(idOrdinal),
+                Sum = reader.GetInt32(sumOrdinal),
+                Name = reader.GetString(nameOrdinal)
+            };
+        }
     }
 
     #endregion

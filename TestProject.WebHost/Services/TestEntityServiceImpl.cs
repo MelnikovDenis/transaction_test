@@ -86,4 +86,13 @@ public class TestEntityServiceImpl(IUnitOfWork uow, IMapper mapper) : TestEntity
 
         return response;
     }
+
+    public override async Task GetAllTestEntitiesAsStreamAsync(
+        Empty request, IServerStreamWriter<GetAllTestEntitiesAsStreamResponse> responseStream, ServerCallContext context)
+    {
+        await foreach (var testEntity in _uow.TestEntityRepo.GetAllAsStreamAsync(context.CancellationToken))
+        {
+            await responseStream.WriteAsync(_mapper.Map<GetAllTestEntitiesAsStreamResponse>(testEntity), context.CancellationToken);
+        }
+    }
 }

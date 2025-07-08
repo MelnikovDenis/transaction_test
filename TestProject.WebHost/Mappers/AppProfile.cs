@@ -31,5 +31,7 @@ public class AppProfile : Profile
         CreateMap<SubTestEntity, GetSubTestEntityByIdResponse>();
 
         CreateMap<SubTestEntity, UpdateSubTestEntityNameResponse>();
+
+        CreateMap<TestEntity, GetAllTestEntitiesAsStreamResponse>();
     }
 }
