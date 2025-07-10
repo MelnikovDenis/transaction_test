@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using TestProject.Core.Entities;
 using TestProject.Grpc.Contracts;
+using TestProject.WebHost.Services.Internal.Models;
 using static TestProject.Grpc.Contracts.AddSumResponse.Types;
 using static TestProject.Grpc.Contracts.GetAllTestEntitiesResponse.Types;
 using static TestProject.Grpc.Contracts.GetAllTestEntitiesResponse.Types.GetAllTestEntitiesDto.Types;
@@ -33,5 +34,7 @@ public class AppProfile : Profile
         CreateMap<SubTestEntity, UpdateSubTestEntityNameResponse>();
 
         CreateMap<TestEntity, GetAllTestEntitiesAsStreamResponse>();
+
+        CreateMap<AuthRequest, AuthData>();
     }
 }

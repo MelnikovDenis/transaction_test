@@ -30,12 +30,8 @@ public class TestEntityServiceImpl(IUnitOfWork uow, IMapper mapper) : TestEntity
     {
         var id = request.Id;
 
-        var testEntity = await _uow.TestEntityRepo.GetByIdAsync(id, context.CancellationToken);
-
-        if(testEntity == null)
-        {
-            throw new RpcException(new Status(StatusCode.NotFound, $"Не найдена сущность {typeof(TestEntity).Name} с id: {id}"));
-        }
+        var testEntity = await _uow.TestEntityRepo.GetByIdAsync(id, context.CancellationToken)
+            ?? throw new RpcException(new Status(StatusCode.NotFound, $"Не найдена сущность {typeof(TestEntity).Name} с id: {id}"));
 
         return _mapper.Map<GetByIdTestEntityResponse>(testEntity);
     }
@@ -48,7 +44,7 @@ public class TestEntityServiceImpl(IUnitOfWork uow, IMapper mapper) : TestEntity
 
         response.TestEntities.AddRange(testEntities.Select(_mapper.Map<GetAllTestEntitiesDto>));
 
-        return  response;
+        return response;
     }
 
     public override async Task<AddSumResponse> AddSumAsync(AddSumRequest request, ServerCallContext context)
@@ -80,7 +76,7 @@ public class TestEntityServiceImpl(IUnitOfWork uow, IMapper mapper) : TestEntity
     {
         var id = request.Id;
 
-        var rowsAffected = await _uow.TestEntityRepo.DeleteAsync(id, context.CancellationToken);
+        _ = await _uow.TestEntityRepo.DeleteAsync(id, context.CancellationToken);
 
         var response = new Empty();
 

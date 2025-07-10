@@ -26,39 +26,42 @@ public class PostgreSqlOptions
 
     private string GetWorkConnectionString()
     {
-        var builder = new NpgsqlConnectionStringBuilder();
-
-        builder.Host = Host;
-        builder.Port = Port;
-        builder.Database = DatabaseName;
-        builder.Username = WorkUserName;
-        builder.Password = WorkUserPassword;
+        var builder = new NpgsqlConnectionStringBuilder
+        {
+            Host = Host,
+            Port = Port,
+            Database = DatabaseName,
+            Username = WorkUserName,
+            Password = WorkUserPassword
+        };
 
         return builder.ToString();
     }
 
     private string GetInitConnectionString()
     {
-        var builder = new NpgsqlConnectionStringBuilder();
-
-        builder.Host = Host;
-        builder.Port = Port;
-        builder.Database = "postgres";
-        builder.Username = InitUserName;
-        builder.Password = InitUserPassword;
+        var builder = new NpgsqlConnectionStringBuilder
+        {
+            Host = Host,
+            Port = Port,
+            Database = "postgres",
+            Username = InitUserName,
+            Password = InitUserPassword
+        };
 
         return builder.ToString();
     }
 
     private string GetTruncateConnectionString()
     {
-        var builder = new NpgsqlConnectionStringBuilder();
-
-        builder.Host = Host;
-        builder.Port = Port;
-        builder.Database = DatabaseName;
-        builder.Username = InitUserName;
-        builder.Password = InitUserPassword;
+        var builder = new NpgsqlConnectionStringBuilder
+        {
+            Host = Host,
+            Port = Port,
+            Database = DatabaseName,
+            Username = InitUserName,
+            Password = InitUserPassword
+        };
 
         return builder.ToString();
     }

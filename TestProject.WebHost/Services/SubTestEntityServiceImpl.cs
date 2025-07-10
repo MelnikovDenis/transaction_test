@@ -27,12 +27,8 @@ public class SubTestEntityServiceImpl(IUnitOfWork uow, IMapper mapper) : SubTest
     {
         var id = request.Id;
 
-        var subTestEntity = await _uow.SubTestEntityRepo.GetByIdAsync(id, context.CancellationToken);
-
-        if (subTestEntity == null)
-        {
-            throw new RpcException(new Status(StatusCode.NotFound, $"Не найдена сущность {typeof(SubTestEntity).Name} с id: {id}"));
-        }
+        var subTestEntity = await _uow.SubTestEntityRepo.GetByIdAsync(id, context.CancellationToken) 
+            ?? throw new RpcException(new Status(StatusCode.NotFound, $"Не найдена сущность {typeof(SubTestEntity).Name} с id: {id}"));
 
         return _mapper.Map<GetSubTestEntityByIdResponse>(subTestEntity);
     }
@@ -54,12 +50,8 @@ public class SubTestEntityServiceImpl(IUnitOfWork uow, IMapper mapper) : SubTest
                     $"Не удалось обновить поле {nameof(SubTestEntity.Name)} у сущности {typeof(SubTestEntity).Name} с id: {id}"));
             }
 
-            var subTestEntity = await _uow.SubTestEntityRepo.GetByIdAsync(id, context.CancellationToken);
-
-            if (subTestEntity == null)
-            {
-                throw new RpcException(new Status(StatusCode.NotFound, $"Не найдена сущность {typeof(SubTestEntity).Name} с id: {id}"));
-            }
+            var subTestEntity = await _uow.SubTestEntityRepo.GetByIdAsync(id, context.CancellationToken) 
+                ?? throw new RpcException(new Status(StatusCode.NotFound, $"Не найдена сущность {typeof(SubTestEntity).Name} с id: {id}"));
 
             await _uow.CommitTransactionAsync(context.CancellationToken);
 
@@ -77,7 +69,7 @@ public class SubTestEntityServiceImpl(IUnitOfWork uow, IMapper mapper) : SubTest
     {
         var id = request.Id;
 
-        var rowsAffected = await _uow.SubTestEntityRepo.DeleteAsync(id, context.CancellationToken);
+        _ = await _uow.SubTestEntityRepo.DeleteAsync(id, context.CancellationToken);
 
         var response = new Empty();
 

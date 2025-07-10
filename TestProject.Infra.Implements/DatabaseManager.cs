@@ -33,18 +33,17 @@ internal class DatabaseManager(IOptions<PostgreSqlOptions> postgreSqlOptions,
             CREATE DATABASE ""{_postgreSqlOptions.DatabaseName}""
         ";
 
-        using (var connection = new NpgsqlConnection(_postgreSqlOptions.InitConnectionString))
+        using var connection = new NpgsqlConnection(_postgreSqlOptions.InitConnectionString);
+
+        var dbExists = connection.ExecuteScalar<bool>(checkSql, new { _postgreSqlOptions.DatabaseName });
+
+        if (!dbExists)
         {
-            var dbExists = connection.ExecuteScalar<bool>(checkSql, new { _postgreSqlOptions.DatabaseName });
+            _logger.LogInformation("Первичное создание БД...");
 
-            if (!dbExists)
-            {
-                _logger.LogInformation("Первичное создание БД...");
+            connection.Execute(createSql);
 
-                connection.Execute(createSql);
-
-                _logger.LogInformation("Первичное создание БД. Успешно.");
-            }
+            _logger.LogInformation("Первичное создание БД. Успешно.");
         }
     }
 
@@ -54,15 +53,14 @@ internal class DatabaseManager(IOptions<PostgreSqlOptions> postgreSqlOptions,
             TRUNCATE TABLE test_sub_entities, test_entities CASCADE
         ";
 
-        using (var connection = new NpgsqlConnection(_postgreSqlOptions.TruncateConnectionString))
-        {
-            _logger.LogInformation("Очистка таблиц...");
+        using var connection = new NpgsqlConnection(_postgreSqlOptions.TruncateConnectionString);
 
-            connection.Open();
-            connection.Execute(truncateSql);
+        _logger.LogInformation("Очистка таблиц...");
 
-            _logger.LogInformation("Очистка таблиц. Успешно.");
-        }
+        connection.Open();
+        connection.Execute(truncateSql);
+
+        _logger.LogInformation("Очистка таблиц. Успешно.");
     }
 
     public void SeedDb()

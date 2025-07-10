@@ -1,0 +1,19 @@
+﻿syntax = "proto3";
+
+option csharp_namespace = "TestProject.Grpc.Contracts";
+
+package TestProject;
+
+
+service AuthGrpcService {
+	rpc AuthAsync(AuthRequest) returns (AuthResponse);
+}
+
+message AuthRequest {
+	string UserName = 1;
+	string UserPassword = 2;
+}
+
+message AuthResponse {
+  string Token = 1;
+}
