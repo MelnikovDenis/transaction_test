@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Grpc.Core;
+using Microsoft.AspNetCore.Authorization;
 using TestProject.Grpc.Contracts;
 using TestProject.WebHost.Services.Internal;
 using TestProject.WebHost.Services.Internal.Models;
@@ -12,6 +13,7 @@ public class AuthGrpcServiceImpl(IMapper mapper, AuthService authService) : Auth
 
     private readonly AuthService _authService = authService;
 
+    [AllowAnonymous]
     public override Task<AuthResponse> AuthAsync(AuthRequest request, ServerCallContext context)
     {
         var authData = _mapper.Map<AuthData>(request);

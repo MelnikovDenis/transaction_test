@@ -8,5 +8,5 @@ public record class TestEntity
 
     public required string Name { get; set; }
 
-    public List<SubTestEntity> SubEntities { get; set; } = new List<SubTestEntity>();
+    public List<SubTestEntity> SubEntities { get; set; } = [];
 }

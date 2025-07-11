@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using Microsoft.AspNetCore.Authorization;
 using System.Data;
 using TestProject.App.Infra.Contracts;
 using TestProject.Core.Entities;
@@ -14,6 +15,7 @@ public class SubTestEntityServiceImpl(IUnitOfWork uow, IMapper mapper) : SubTest
 
     private readonly IMapper _mapper = mapper;
 
+    [Authorize]
     public override async Task<CreateSubTestEntityResponse> CreateSubTestEntityAsync(CreateSubTestEntityRequest request, ServerCallContext context)
     {
         var subTestEntity = _mapper.Map<SubTestEntity>(request);
@@ -23,6 +25,7 @@ public class SubTestEntityServiceImpl(IUnitOfWork uow, IMapper mapper) : SubTest
         return _mapper.Map<CreateSubTestEntityResponse>(subTestEntity);
     }
 
+    [Authorize]
     public override async Task<GetSubTestEntityByIdResponse> GetSubTestEntityByIdAsync(GetSubTestEntityByIdRequest request, ServerCallContext context)
     {
         var id = request.Id;
@@ -33,6 +36,7 @@ public class SubTestEntityServiceImpl(IUnitOfWork uow, IMapper mapper) : SubTest
         return _mapper.Map<GetSubTestEntityByIdResponse>(subTestEntity);
     }
 
+    [Authorize]
     public override async Task<UpdateSubTestEntityNameResponse> UpdateSubTestEntityNameAsync(UpdateSubTestEntityNameRequest request, ServerCallContext context)
     {
         var id = request.Id;
@@ -65,6 +69,7 @@ public class SubTestEntityServiceImpl(IUnitOfWork uow, IMapper mapper) : SubTest
         }             
     }
 
+    [Authorize]
     public override async Task<Empty> DeleteSubTestEntityAsync(DeleteSubTestEntityRequest request, ServerCallContext context)
     {
         var id = request.Id;
