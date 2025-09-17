@@ -21,7 +21,7 @@ builder.Services.AddGrpc(options =>
     options.Interceptors.Add<RequestCounterInterceptor>();
 });
 builder.Services.AddGrpcReflection();
-builder.Services.AddAutoMapper(config => config.AddProfile<AppProfile>());
+builder.Services.AddAutoMapper(config => config.AddProfiles([ new TimestampProfile(), new AppProfile() ]));
 
 builder.Services.AddInfraLayer(builder.Configuration);
 builder.Services.SetUpMigrations(builder.Configuration);

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Grpc.Core;
+using Microsoft.AspNetCore.Authorization;
 using TestProject.Grpc.Contracts;
 using TestProject.WebHost.Services.Internal.Models;
 
@@ -18,7 +19,8 @@ public class EchoServiceImpl
         _mapper = mapper;
     }
 
-    public override Task<EchoMessage> EchoAsync (EchoMessage request, ServerCallContext context)
+    [AllowAnonymous]
+    public override Task<EchoMessage> EchoAsync(EchoMessage request, ServerCallContext context)
     {
         var echoModel = _mapper.Map<EchoModel>(request);
 

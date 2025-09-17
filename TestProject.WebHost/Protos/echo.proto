@@ -4,7 +4,7 @@ option csharp_namespace = "TestProject.Grpc.Contracts";
 
 package TestProject;
 
-import "google/protobuf/Timestamp.proto";
+import "google/protobuf/timestamp.proto";
 
 service EchoService {
 	rpc EchoAsync (EchoMessage) returns (EchoMessage);
