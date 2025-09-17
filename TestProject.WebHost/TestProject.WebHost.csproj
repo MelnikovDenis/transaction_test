@@ -8,14 +8,9 @@
 
   <ItemGroup>
     <Protobuf Include="Protos\sub_test_entity.proto" GrpcServices="Server" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Protobuf Include="Protos\test_entity.proto" GrpcServices="Server" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Protobuf Include="Protos\auth.proto" GrpcServices="Server" />
+    <Protobuf Include="Protos\echo.proto" GrpcServices="Server" />
   </ItemGroup>
 
   <ItemGroup>

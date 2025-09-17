@@ -27,6 +27,7 @@ app.Services.EnsureDbReady(app.Configuration);
 app.MapGrpcService<TestEntityServiceImpl>();
 app.MapGrpcService<SubTestEntityServiceImpl>();
 app.MapGrpcService<AuthGrpcServiceImpl>();
+app.MapGrpcService<EchoServiceImpl>();
 app.MapGrpcReflectionService();
 
 app.Run();

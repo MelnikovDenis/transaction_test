@@ -36,5 +36,7 @@ public class AppProfile : Profile
         CreateMap<TestEntity, GetAllTestEntitiesAsStreamResponse>();
 
         CreateMap<AuthRequest, AuthData>();
+
+        CreateMap<EchoMessage, EchoModel>().ReverseMap();
     }
 }
