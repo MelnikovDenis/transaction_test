@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
+using Microsoft.AspNetCore.Authorization;
 using System.Data;
 using TestProject.App.Infra.Contracts;
 using TestProject.Core.Entities;
@@ -15,6 +16,7 @@ public class TestEntityServiceImpl(IUnitOfWork uow, IMapper mapper) : TestEntity
 
     private readonly IMapper _mapper = mapper;
 
+    [Authorize]
     public override async Task<CreateTestEntityResponse> CreateTestEntityAsync(CreateTestEntityRequest request, ServerCallContext context)
     {
         var testEntity = _mapper.Map<TestEntity>(request);
@@ -26,6 +28,7 @@ public class TestEntityServiceImpl(IUnitOfWork uow, IMapper mapper) : TestEntity
         return createTestEntityResponse;
     }
 
+    [Authorize]
     public override async Task<GetByIdTestEntityResponse> GetByIdTestEntityAsync(GetByIdTestEntityRequest request, ServerCallContext context)
     {
         var id = request.Id;
@@ -36,6 +39,7 @@ public class TestEntityServiceImpl(IUnitOfWork uow, IMapper mapper) : TestEntity
         return _mapper.Map<GetByIdTestEntityResponse>(testEntity);
     }
 
+    [Authorize]
     public override async Task<GetAllTestEntitiesResponse> GetAllTestEntitiesAsync(Empty request, ServerCallContext context)
     {
         var testEntities = await _uow.TestEntityRepo.GetAllAsync(context.CancellationToken);
@@ -47,6 +51,7 @@ public class TestEntityServiceImpl(IUnitOfWork uow, IMapper mapper) : TestEntity
         return response;
     }
 
+    [Authorize]
     public override async Task<AddSumResponse> AddSumAsync(AddSumRequest request, ServerCallContext context)
     {
         var id = request.Id;
@@ -72,6 +77,7 @@ public class TestEntityServiceImpl(IUnitOfWork uow, IMapper mapper) : TestEntity
         }
     }
 
+    [Authorize]
     public override async Task<Empty> DeleteTestEntityAsync(DeleteTestEntityRequest request, ServerCallContext context)
     {
         var id = request.Id;
@@ -83,6 +89,7 @@ public class TestEntityServiceImpl(IUnitOfWork uow, IMapper mapper) : TestEntity
         return response;
     }
 
+    [Authorize]
     public override async Task GetAllTestEntitiesAsStreamAsync(
         Empty request, IServerStreamWriter<GetAllTestEntitiesAsStreamResponse> responseStream, ServerCallContext context)
     {
